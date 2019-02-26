@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/falk-werner/jrpc.svg?branch=master)](https://travis-ci.org/falk-werner/jrpc)
+
 # jrpc
 
 Yet another JSON-RPC server based on libwebsockets.
