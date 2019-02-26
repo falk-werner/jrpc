@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/falk-werner/jrpc.svg?branch=master)](https://travis-ci.org/falk-werner/jrpc)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1eb7cdd821704b7a9b5dee83c32ab541)](https://www.codacy.com/app/falk.werner/jrpc?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=falk-werner/jrpc&amp;utm_campaign=Badge_Grade)
 
 # jrpc
 
