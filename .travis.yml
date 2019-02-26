@@ -1,0 +1,25 @@
+language: cpp
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+    apt:
+      update: true
+      packages:
+        - valgrind
+
+before_install:
+  - ./install_deps.sh
+  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+
+before_script:
+  - mkdir .build
+  - cd .build
+  - cmake -DCMAKE_BUILD_TYPE=Debug ..
+
+script:
+  - make
+  - valgrind ./alltests
