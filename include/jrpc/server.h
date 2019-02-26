@@ -58,6 +58,14 @@ extern JRPC_API void jrpc_server_set_documentroot(
     struct jrpc_server * server,
     char const * document_root);
 
+extern JRPC_API void jrpc_server_set_certpath(
+    struct jrpc_server * server,
+    char const * cert_path);
+
+extern JRPC_API void jrpc_server_set_keypath(
+    struct jrpc_server * server,
+    char const * key_path);
+
 extern JRPC_API void jrpc_server_set_userdata(
     struct jrpc_server * server,
     void * user_data);

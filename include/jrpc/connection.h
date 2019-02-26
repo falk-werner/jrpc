@@ -25,11 +25,8 @@ extern JRPC_API void jrpc_respond_error(
 
 extern JRPC_API void jrpc_notify(
     struct jrpc_connection * connection,
-    json_t * content);
-
-extern JRPC_API void jrpc_notify_all(
-    struct jrpc_connection * connection,
-    json_t * content);
+    char const * method,
+    json_t * params);
 
 extern JRPC_API struct jrpc_server * jrpc_connection_get_server(
     struct jrpc_connection * connection);

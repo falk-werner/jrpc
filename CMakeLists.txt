@@ -11,8 +11,11 @@ set(CMAKE_C_STANDARD 99)
 set(C_WARNINGS -Wall -Wextra)
 
 add_library(jrpc STATIC
+    lib/jrpc/message.c
+    lib/jrpc/queue.c
     lib/jrpc/server.c
     lib/jrpc/connection.c
+    lib/jrpc/protocol.c
 )
 
 target_include_directories(jrpc PUBLIC
