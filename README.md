@@ -21,7 +21,7 @@ To install dependencies, see below.
 By default, build of example application is enabled. You can disable it using the following cmake option:
 
 -   **WITHOUT_EXAMPLE**: disable example
-    `cmake -DWITHOUD_EXAMPLE=ON ..`
+    `cmake -DWITHOUT_EXAMPLE=ON ..`
 
 ## Dependencies
 
