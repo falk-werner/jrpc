@@ -59,24 +59,19 @@ static int jrpc_protocol_callback(
     {
         switch (reason)
         {
-        case LWS_CALLBACK_WSI_CREATE:
-            jrpc_connection_init(connection, protocol->server, wsi);
-            break;
-        case LWS_CALLBACK_WSI_DESTROY:
-            jrpc_connection_cleanup(connection);
-            connection = NULL;
-            break;
         case LWS_CALLBACK_ESTABLISHED:
+            jrpc_connection_init(connection, protocol->server, wsi);
             protocol->onconnected(connection);
             break;
         case LWS_CALLBACK_CLOSED:
             protocol->ondisconnected(connection);
+            jrpc_connection_cleanup(connection);
             break;        
         case LWS_CALLBACK_RECEIVE:
             jrpc_protocol_process(protocol, connection, in, length);
             break;
         case LWS_CALLBACK_SERVER_WRITEABLE:
-            if (jrpc_queue_is_empty(&connection->messages))
+            if (!jrpc_queue_is_empty(&connection->messages))
             {
                 struct jrpc_message * message = jrpc_queue_dequeue(&connection->messages);
                 lws_write(wsi, (unsigned char *) message->data, message->length, LWS_WRITE_TEXT);

@@ -14,7 +14,7 @@ To install dependencies, see below.
     cd .build
     cmake ..
     make
-    ./chat-server
+    ./chat-server -d ../example/chat-server/www/
 
 ### Build options
 
