@@ -1,63 +1,66 @@
 #include <jrpc.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
 #include <signal.h>
 
 #include <unistd.h>
 #include <getopt.h>
 
+#include <iostream>
+#include <cstdlib>
+
+namespace
+{
+
 static struct jrpc_server * server;
 
-static void onmethod(
+void onmethod(
     struct jrpc_connection * connection,
     char const * method_name,
     json_t * params,
     int id)
 {
-    puts("method called");
+    std::cout << "method called" << std::endl;
 
     jrpc_respond_error(connection, 42, "not implemented", id);
 }
 
 
-static void onconnected(
+void onconnected(
     struct jrpc_connection * connection)
 {
-    puts("connected");
+    std::cout << "connected" << std::endl;
 }
 
-static void ondisconnected(
+void ondisconnected(
     struct jrpc_connection * connection)
 {
-    puts("disconnection");
+    std::cout << "disconnection" << std::endl;
 }
 
-static void on_shutdown_requested(int signal_id)
+void on_shutdown_requested(int signal_id)
 {
     jrpc_server_shutdown(server);
 }
 
-static void printUsage(void)
+void printUsage(void)
 {
-    printf(
-        "chat-server, Copyright (C) 2019, Falk Werner\n"
-        "Example for jrpc library\n"
-        "\n"
-        "Usage: chat-server [-p <port>] [-d <document_root>]\n"
-        "                   [-c <cert_path>] [-k <key_path]\n"
-        "\n"
-        "Options:\n"
-        "\t-p, --port          Number of servers port (default: 8080)\n"
-        "\t-d, --document_root Path of ww directory (default: not set, disabled)\n"
-        "\t-c, --cert_path     Path of servers own certifcate (default: not set, TLS disabled)\n"
-        "\t-k, --key_path      Path of servers private key (default: not set, TLS disabled)\n"
-        "\n"
-    );
+    std::cout
+        << "chat-server, Copyright (C) 2019, Falk Werner" << std::endl
+        << "Example for jrpc library" << std::endl
+        << std::endl
+        << "Usage: chat-server [-p <port>] [-d <document_root>]" << std::endl
+        << "                   [-c <cert_path>] [-k <key_path]" << std::endl
+        << std::endl
+        << "Options:" << std::endl
+        << "\t-p, --port          Number of servers port (default: 8080)" << std::endl
+        << "\t-d, --document_root Path of ww directory (default: not set, disabled)" << std::endl
+        << "\t-c, --cert_path     Path of servers own certifcate (default: not set, TLS disabled)" << std::endl
+        << "\t-k, --key_path      Path of servers private key (default: not set, TLS disabled)" << std::endl
+        << std::endl
+    ;
 }
 
-static int parse_arguments(
+int parse_arguments(
     int argc,
     char* argv[],
     struct jrpc_server * server)
@@ -68,7 +71,7 @@ static int parse_arguments(
         {"cert_path", required_argument, NULL, 'c'},
         {"key_path", required_argument, NULL, 'k'},
         {"port", required_argument, NULL, 'p'},
-        {"help", required_argument, NULL, 'h'},
+        {"help", no_argument, NULL, 'h'},
         {NULL, 0, NULL, 0}
     };
 
@@ -112,14 +115,18 @@ static int parse_arguments(
     if (show_help)
     {
         printUsage();
+        result = EXIT_FAILURE;
     }
 
     return result;
 }
 
+}
+
 int main(int argc, char * argv[])
 {
     server = jrpc_server_create();
+    jrpc_server_set_protocolname(server, "jrpc-chat");
     jrpc_server_set_onconnected(server, &onconnected);
     jrpc_server_set_ondisconnected(server, &ondisconnected);
     jrpc_server_set_onmethod(server, &onmethod);

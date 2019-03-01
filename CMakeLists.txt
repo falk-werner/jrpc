@@ -53,7 +53,7 @@ install(FILES "${PROJECT_BINARY_DIR}/libjrpc.pc" DESTINATION lib${LIB_SUFFIX}/pk
 if(NOT WITHOUT_EXAMPLE)
 
 add_executable(chat-server
-    example/chat-server/main.c
+    example/chat-server/main.cc
 )
 
 

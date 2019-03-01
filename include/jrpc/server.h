@@ -54,6 +54,10 @@ extern JRPC_API void jrpc_server_set_ondisconnected(
     struct jrpc_server * server,
     jrpc_disconnected_fn * handler);
 
+extern JRPC_API void jrpc_server_set_protocolname(
+    struct jrpc_server * server,
+    char const * protocol_name);
+
 extern JRPC_API void jrpc_server_set_documentroot(
     struct jrpc_server * server,
     char const * document_root);

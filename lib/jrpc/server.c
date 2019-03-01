@@ -12,6 +12,7 @@
 #define JRPC_SERVER_TIMEOUT (1 * 1000)
 
 #define JRPC_SERVER_DEFAULT_PORT 8080
+#define JRPC_SERVER_DEFAULT_PROTOCOL_NAME ("jrpc")
 
 struct jrpc_server
 {
@@ -21,6 +22,7 @@ struct jrpc_server
     struct lws_http_mount mount;
     struct lws_context_creation_info info;
     struct lws_context * context;
+    char * protocol_name;
     char * document_root;
     char * cert_path;
     char * key_path;
@@ -35,7 +37,7 @@ static struct lws_context * jrpc_server_create_context(
     memset(server->ws_protocols, 0, sizeof(struct lws_protocols) * JRPC_SERVER_PROTOCOL_COUNT);
     server->ws_protocols[0].name = "http";
     server->ws_protocols[0].callback = lws_callback_http_dummy;
-    server->ws_protocols[1].name = "jrpc";
+    server->ws_protocols[1].name = server->protocol_name;
     jrpc_protocol_init_lws(&server->protocol, &server->ws_protocols[1]);
 
     memset(&server->mount, 0, sizeof(struct lws_http_mount));
@@ -80,6 +82,7 @@ struct jrpc_server * jrpc_server_create(void)
     {
         jrpc_server_protocol_init(&server->protocol, server);
         server->is_shutdown_requested = false;
+        server->protocol_name = strdup(JRPC_SERVER_DEFAULT_PROTOCOL_NAME);
         server->document_root = NULL;
         server->cert_path = NULL;
         server->key_path = NULL;
@@ -99,6 +102,7 @@ void jrpc_server_dispose(
     }
 
     jrpc_protocol_cleanup(&server->protocol);
+    free(server->protocol_name);
     free(server->document_root);
     free(server->cert_path);
     free(server->key_path);
@@ -138,6 +142,14 @@ void jrpc_server_set_ondisconnected(
     jrpc_disconnected_fn * handler)
 {
     server->protocol.ondisconnected = handler;
+}
+
+void jrpc_server_set_protocolname(
+    struct jrpc_server * server,
+    char const * protocol_name)
+{
+    free(server->protocol_name);
+    server->protocol_name = strdup(protocol_name);
 }
 
 void jrpc_server_set_documentroot(
