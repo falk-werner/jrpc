@@ -33,6 +33,9 @@ pkg_check_modules(JANSSON REQUIRED jansson)
 set(CMAKE_C_STANDARD 99)
 set(C_WARNINGS -Wall -Wextra)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 add_library(jrpc STATIC
     lib/jrpc/message.c
     lib/jrpc/queue.c
