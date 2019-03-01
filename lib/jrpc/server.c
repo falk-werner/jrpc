@@ -17,7 +17,6 @@
 struct jrpc_server
 {
     struct jrpc_protocol protocol;
-    bool is_shutdown_requested;
     struct lws_protocols ws_protocols[JRPC_SERVER_PROTOCOL_COUNT];
     struct lws_http_mount mount;
     struct lws_context_creation_info info;
@@ -81,7 +80,6 @@ struct jrpc_server * jrpc_server_create(void)
     if (NULL != server)
     {
         jrpc_server_protocol_init(&server->protocol, server);
-        server->is_shutdown_requested = false;
         server->protocol_name = strdup(JRPC_SERVER_DEFAULT_PROTOCOL_NAME);
         server->document_root = NULL;
         server->cert_path = NULL;
@@ -190,21 +188,17 @@ void * jrpc_server_get_userdata(
 }
 
 void jrpc_server_run(
-    struct jrpc_server * server)
+    struct jrpc_server * server,
+    int timeout_ms)
 {
-    server->context = jrpc_server_create_context(server);
+    if (NULL == server->context)
+    {
+        server->context = jrpc_server_create_context(server);
+    }
+
     if (NULL != server->context)
     {
-        int n = 0;
-        while ((0 <= n) && (!server->is_shutdown_requested))
-        {
-            n = lws_service(server->context, JRPC_SERVER_TIMEOUT);
-        }
+        lws_service(server->context, timeout_ms);
     }
 }
 
-void jrpc_server_shutdown(
-    struct jrpc_server * server)
-{
-    server->is_shutdown_requested = true;
-}

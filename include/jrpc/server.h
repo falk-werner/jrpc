@@ -78,10 +78,8 @@ extern JRPC_API void * jrpc_server_get_userdata(
     struct jrpc_server * server);
 
 extern JRPC_API void jrpc_server_run(
-    struct jrpc_server * server);
-
-extern JRPC_API void jrpc_server_shutdown(
-    struct jrpc_server * server);
+    struct jrpc_server * server,
+    int timeout_ms);
 
 #ifdef __cplusplus
 }

@@ -20,7 +20,7 @@ struct chatter
     std::string name;    
 };
 
-static jrpc_server * server;
+static bool is_shutdown_requested;
 static std::unordered_map<jrpc_connection *, chatter> chatters;
 
 bool is_name_used(char const * name)
@@ -175,7 +175,7 @@ void on_shutdown_requested(int signal_id)
 {
     (void) signal_id;
 
-    jrpc_server_shutdown(server);
+    is_shutdown_requested = true;
 }
 
 void printUsage(void)
@@ -261,7 +261,7 @@ int parse_arguments(
 
 int main(int argc, char * argv[])
 {
-    server = jrpc_server_create();
+    jrpc_server * server = jrpc_server_create();
     jrpc_server_set_protocolname(server, "jrpc-chat");
     jrpc_server_set_onconnected(server, &onconnected);
     jrpc_server_set_ondisconnected(server, &ondisconnected);
@@ -271,8 +271,14 @@ int main(int argc, char * argv[])
     int result = parse_arguments(argc, argv, server);
     if (EXIT_SUCCESS == result)
     {
+        is_shutdown_requested = false;
         signal(SIGINT, &on_shutdown_requested);
-        jrpc_server_run(server);
+
+        while (!is_shutdown_requested)
+        {
+            int const timeout_ms = 1000;
+            jrpc_server_run(server, timeout_ms);
+        }
     }
 
     jrpc_server_dispose(server);
