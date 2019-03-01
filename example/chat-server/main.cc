@@ -1,44 +1,180 @@
-#include <jrpc.h>
 
-#include <signal.h>
+#include <iostream>
+#include <unordered_map>
+
+#include <cstdlib>
+#include <cstring>
+#include <csignal>
 
 #include <unistd.h>
 #include <getopt.h>
 
-#include <iostream>
-#include <cstdlib>
+#include <jrpc.h>
 
 namespace
 {
 
-static struct jrpc_server * server;
+struct chatter
+{
+    jrpc_connection * connection;
+    std::string name;    
+};
+
+static jrpc_server * server;
+static std::unordered_map<jrpc_connection *, chatter> chatters;
+
+bool is_name_used(char const * name)
+{
+    for(const auto& item: chatters)
+    {
+        chatter const & actual = item.second;        
+        if (0 == actual.name.compare(name))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void announce(
+    char const * what,
+    char const * who
+)
+{
+    for(auto const & item: chatters) 
+    {
+        chatter const & actual = item.second;
+
+        json_t * params = json_array();
+        json_array_append_new(params, json_string(what));
+        json_array_append_new(params, json_string(who));
+
+        jrpc_notify(actual.connection, "announce", params);
+    }
+}
+
+
+void set_name(
+    chatter & who,
+    json_t * params,
+    int id)
+{
+    json_t * name_holder = json_array_get(params, 0);
+    if ((nullptr != name_holder) && (json_is_string(name_holder))) 
+    {
+        char const * name = json_string_value(name_holder);
+        if (!is_name_used(name))
+        {
+            who.name = name;
+
+            json_t * result = json_object();
+            json_object_set_new(result, "name", json_string(name));
+            jrpc_respond(who.connection, result, id);
+
+            announce("arrived", who.name.c_str());
+        }
+        else
+        {
+            jrpc_respond_error(who.connection, 1, "name already used", id);
+        }
+    }
+    else
+    {
+        jrpc_respond_error(who.connection, -1, "invalid params", id);
+    }
+    
+}
 
 void onmethod(
-    struct jrpc_connection * connection,
+    jrpc_connection * connection,
     char const * method_name,
     json_t * params,
     int id)
 {
-    std::cout << "method called" << std::endl;
-
-    jrpc_respond_error(connection, 42, "not implemented", id);
+    auto it = chatters.find(connection);
+    if (it != chatters.end())
+    {
+        chatter & who = it->second;
+        if (0 == strcmp("set_name", method_name))
+        {
+            set_name(who, params, id);
+        }
+        else
+        {
+            jrpc_respond_error(connection, -1, "not implemented", id);
+        }
+    }
+    else
+    {
+        jrpc_respond_error(connection, -1, "invalid connection", id);
+    }
 }
 
+void chat(
+    chatter & who,
+    json_t * params
+)
+{
+    json_t * message_holder = json_array_get(params, 0);
+    if ((nullptr != message_holder) && (json_is_string(message_holder))) 
+    {
+        char const * message = json_string_value(message_holder);
+
+        for(auto const & item: chatters) 
+        {
+            chatter const & actual = item.second;
+
+            json_t * post = json_array();
+            json_array_append_new(post, json_string(who.name.c_str()));
+            json_array_append_new(post, json_string(message));
+
+            jrpc_notify(actual.connection, "message", post);
+        }
+    }
+}
+
+void onnotify(
+    jrpc_connection * connection,
+    char const * method_name,
+    json_t * params
+)
+{
+    auto it = chatters.find(connection);
+    if (it != chatters.end())
+    {
+        chatter & who = it->second;
+
+        if (0 == strcmp("chat", method_name))
+        {
+            chat(who, params);
+        }
+    }
+}
 
 void onconnected(
-    struct jrpc_connection * connection)
+    jrpc_connection * connection)
 {
-    std::cout << "connected" << std::endl;
+    chatters.insert({connection, {connection, ""}});
 }
 
 void ondisconnected(
-    struct jrpc_connection * connection)
+    jrpc_connection * connection)
 {
-    std::cout << "disconnection" << std::endl;
+    auto it = chatters.find(connection);
+    if (it != chatters.end())
+    {
+        chatter & who = it->second;
+        announce("gone", who.name.c_str());
+
+        chatters.erase(connection);
+    }
 }
 
 void on_shutdown_requested(int signal_id)
 {
+    (void) signal_id;
+
     jrpc_server_shutdown(server);
 }
 
@@ -65,7 +201,7 @@ int parse_arguments(
     char* argv[],
     struct jrpc_server * server)
 {
-    static struct option const options[] =
+    static option const options[] =
     {
         {"document_root", required_argument, NULL, 'd'},
         {"cert_path", required_argument, NULL, 'c'},
@@ -130,6 +266,7 @@ int main(int argc, char * argv[])
     jrpc_server_set_onconnected(server, &onconnected);
     jrpc_server_set_ondisconnected(server, &ondisconnected);
     jrpc_server_set_onmethod(server, &onmethod);
+    jrpc_server_set_onnotify(server, &onnotify);
 
     int result = parse_arguments(argc, argv, server);
     if (EXIT_SUCCESS == result)

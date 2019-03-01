@@ -2,19 +2,26 @@
 <html>
 <head>
     <title>Chat-Server (JRPC-Example)</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="style/main.css">
+    <script type="module" src="js/startup.js"></script>
 </head>
-<bod>
-    <div>
-        <span>Server :</span>
+<body>
+    <div class='page'>
+    <div class='control'>
+        <span>Server:</span>
         <input id='server' type="text" value="ws://localhost:8080" />
+        <span>Nick:</span>
+        <input id='nickname' type="text" value="" placeholder="nick"/>
         <input id='connect_button' type="button" value="connect" />
-    </div>
-    <div>
-        <span>Message:</span>
-        <input id="" type="text" value="Hello, I'm new here" />
-        <input id="send_button" type="button" value="submit" />
     </div>
     <div id="content">
     </div>
-</bod>
+    <div class='control'>
+        <span>Message:</span>
+        <input id="message" type="text" value="Hello, I'm new here" />
+        <input id="submit_button" type="button" value="submit" />
+    </div>
+    </div>
+</body>
 </html>
