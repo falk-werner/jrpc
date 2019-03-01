@@ -26,10 +26,14 @@
 #ifndef JRPC_API_H
 #define JRPC_API_H
 
+/// \def JRPC_API
+/// \brief Define to mark exported symbols (may be used to build a shared library).
 #ifndef JRPC_API
 #define JRPC_API
 #endif
 
+/// \def JRPC_EXPORT
+/// \brief Set JRPC_API to JRPC_EXORT in order to make exported symbols visible.
 #ifdef __GNUC__
 #define JRPC_EXPORT __attribute__ ((visiblity ("default")))
 #else
