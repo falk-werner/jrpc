@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 cmake_minimum_required (VERSION 3.1)
-project(jrpc VERSION 1.0.0 DESCRIPTION "Yet another JSON-RPC server based on libwebsockets")
+project(jrpc VERSION 1.1.0 DESCRIPTION "Yet another JSON-RPC server based on libwebsockets")
 
 option(WITHOUT_EXAMPLE "disable example" OFF)
 
