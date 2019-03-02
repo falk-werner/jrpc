@@ -44,7 +44,7 @@ struct jrpc_connection;
 ///
 /// \param connection Connection, that invokes the method
 /// \param method_name Name of the method to invoke
-/// \param params JSON-array containing the arguments of the method
+/// \param params JSON-array or JSON-object containing the arguments of the method
 /// \param id ID of the method call, which must be used in response
 ///
 /// \see jrpc_server_set_onmethod
@@ -64,7 +64,7 @@ typedef void jrpc_invoke_fn(
 ///
 /// \param connection  Connection, that triggers the notification
 /// \param method_name Name of the notification
-/// \param params JSON-array containing the arguments of the notification
+/// \param params JSON-array or JSON-object containing the arguments of the notification
 ///
 /// \see jrpc_server_set_onnotify
 typedef void jrpc_notify_fn(

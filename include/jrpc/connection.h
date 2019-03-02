@@ -48,7 +48,7 @@ extern "C"
 ///       on an error message.
 ///
 /// \param connection Connection that will receive the response
-/// \param result JSON-object containing the response
+/// \param result any JSON type, representing the response
 /// \param id ID of the corresponding request
 ///
 /// \see jrpc_invoke_fn

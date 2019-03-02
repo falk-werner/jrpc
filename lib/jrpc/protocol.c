@@ -47,7 +47,7 @@ static void jrpc_protocol_process(
         json_t * id_holder = json_object_get(request, "id");
 
         if ((NULL != name_holder) && (json_is_string(name_holder)) &&
-            (NULL != params) && (json_is_array(params)))
+            (NULL != params) && (json_is_array(params) || json_is_object(params)))
         {
             char const * method_name = json_string_value(name_holder);
 
