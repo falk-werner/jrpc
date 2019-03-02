@@ -96,7 +96,7 @@ function onmessage(message) {
             const [name, content] = parsed.params;
             chat(name, content);
         }
-        else if ("announce" == parsed.method) {
+        else if ("announce" === parsed.method) {
             const [what, who] = parsed.params;
             announce(what, who);
         }
