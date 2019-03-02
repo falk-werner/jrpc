@@ -89,25 +89,37 @@ function onopen() {
     }));
 }
 
+function processNotification(method, params) {
+    if ("message" === method) {
+        const [name, content] = params;
+        chat(name, content);
+    }
+    else if ("announce" === method) {
+        const [what, who] = params;
+        announce(what, who);
+    }
+}
+
+function processResponse(response) {
+    if (MESSAGE_ID_SET_NAME === response.id) {
+        if (response.error) {
+            logError(response.error.message || "failed to set nickname");
+
+            const temp = ws;
+            ws = null;
+            temp.close();
+        }    
+    }
+}
+
 function onmessage(message) {
     try {
         const parsed = JSON.parse(message.data);
-        if ("message" === parsed.method) {
-            const [name, content] = parsed.params;
-            chat(name, content);
+        if (typeof(parsed.method) === "string") {
+            processNotification(parsed.method, parsed.params);
         }
-        else if ("announce" === parsed.method) {
-            const [what, who] = parsed.params;
-            announce(what, who);
-        }
-        else if (MESSAGE_ID_SET_NAME === parsed.id) {
-            if (parsed.error) {
-                logError(parsed.error.message || "failed to set nickname");
-
-                const temp = ws;
-                ws = null;
-                temp.close();
-            }
+        else if (typeof(parsed.id) === "number") {
+            processResponse(parsed);
         }
     }
     catch (ex) {
