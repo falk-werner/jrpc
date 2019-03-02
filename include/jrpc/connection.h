@@ -87,7 +87,7 @@ extern JRPC_API void jrpc_respond_error(
 ///
 /// \param connection Connection that will receive the response
 /// \param method Name of the notification
-/// \param params JSON-array containing the arguments of the notification
+/// \param params JSON-array or JSON-object containing the arguments of the notification
 extern JRPC_API void jrpc_notify(
     struct jrpc_connection * connection,
     char const * method,
