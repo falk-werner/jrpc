@@ -22,9 +22,9 @@ connected clients (aka. server push) thanks to websockets protocol.
 
 JRPC supports three kinds of messages:
 
--    **request** to invoke a method
--    **response** to answer a method
--    **notification** to send information without expecting a response
+-   **request** to invoke a method
+-   **response** to answer a method
+-   **notification** to send information without expecting a response
 
 ### Request
 
@@ -55,6 +55,7 @@ A response is alwasy sent by server to client as result of a method invokation. 
 
 -   successful results  
     contains a field *result*, containing the results of the method invokation
+
 -   error messages  
     contains a fiels *error*, containing detailed description of the error
 
@@ -80,7 +81,6 @@ Notifications are the only type of message that can be sent in both directions, 
 | ----------- |:---------------:| --------------------------------- |
 | method      | string          | name of the method to invoke      |
 | params      | array or object | method specific parameters        |
-
 
 ## Build and run
 
