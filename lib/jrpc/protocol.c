@@ -124,7 +124,7 @@ static int jrpc_protocol_callback(
     case LWS_CALLBACK_RAW_RX_FILE:
         {
             char temp;
-            read(protocol->fd[0], &temp, 1);
+            read(protocol->fd[0], &temp, 1); /* Flawfinder: ignore */
         }
         break;
     default:
