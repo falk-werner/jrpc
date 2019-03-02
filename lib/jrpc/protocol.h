@@ -39,6 +39,7 @@ struct jrpc_protocol
     jrpc_connected_fn * onconnected;
     jrpc_disconnected_fn * ondisconnected;
     void * user_data;
+    int fd[2];
 };
 
 #ifdef __cplusplus
@@ -57,6 +58,9 @@ extern void jrpc_protocol_init_lws(
     struct jrpc_protocol * protocol,
     struct lws_protocols * lws_protocol
 );
+
+extern void jrpc_protocol_wakeup(
+    struct jrpc_protocol * protocol);
 
 #ifdef __cplusplus
 }

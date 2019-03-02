@@ -227,3 +227,8 @@ void jrpc_server_run(
     }
 }
 
+void jrpc_server_wakeup(
+    struct jrpc_server * server)
+{
+    jrpc_protocol_wakeup(&server->protocol);
+}

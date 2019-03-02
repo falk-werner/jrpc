@@ -278,9 +278,26 @@ extern JRPC_API void * jrpc_server_get_userdata(
 ///
 /// \param server Instance of the server
 /// \param timeout_ms Milliseconds of timeout, use 0 to poll without any blocking
+///
+/// \see jrpc_server_wakeup
 extern JRPC_API void jrpc_server_run(
     struct jrpc_server * server,
     int timeout_ms);
+
+/// \brief Wakeup JRPC server.
+///
+/// This function is used to safely interrupt jrpc_server_run from
+/// another thread.
+///
+/// \not This is the only function that can be called safely from
+///      a foreign thread context. All other functions must be
+///      called from the thread, which is running JRPC server.
+///
+/// \params server Instance of the server
+///
+/// \see jrpc_server_run
+extern JRPC_API void jrpc_server_wakeup(
+    struct jrpc_server * server);
 
 #ifdef __cplusplus
 }

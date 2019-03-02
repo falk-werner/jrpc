@@ -28,6 +28,10 @@
 #include "jrpc/message.h"
 #include "jrpc/util.h"
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
 static void jrpc_protocol_process(
     struct jrpc_protocol * protocol,
     struct jrpc_connection * connection,
@@ -80,32 +84,51 @@ static int jrpc_protocol_callback(
     struct jrpc_protocol * protocol = lws_protocol->user;
     struct jrpc_connection * connection = user;
 
-    if (NULL != connection)
+    switch (reason)
     {
-        switch (reason)
+    case LWS_CALLBACK_PROTOCOL_INIT:
         {
-        case LWS_CALLBACK_ESTABLISHED:
+            lws_sock_file_fd_type fd;
+            fd.sockfd = protocol->fd[0];
+            lws_adopt_descriptor_vhost(lws_get_vhost(wsi), LWS_ADOPT_RAW_FILE_DESC, fd, lws_protocol->name, NULL);
+        }
+        break;
+    case LWS_CALLBACK_ESTABLISHED:
+        if (NULL != connection)
+        {
             jrpc_connection_init(connection, protocol->server, wsi);
             protocol->onconnected(connection);
-            break;
-        case LWS_CALLBACK_CLOSED:
+        }
+        break;
+    case LWS_CALLBACK_CLOSED:
+        if (NULL != connection)
+        {
             protocol->ondisconnected(connection);
             jrpc_connection_cleanup(connection);
-            break;        
-        case LWS_CALLBACK_RECEIVE:
-            jrpc_protocol_process(protocol, connection, in, length);
-            break;
-        case LWS_CALLBACK_SERVER_WRITEABLE:
-            if (!jrpc_queue_is_empty(&connection->messages))
-            {
-                struct jrpc_message * message = jrpc_queue_dequeue(&connection->messages);
-                lws_write(wsi, (unsigned char *) message->data, message->length, LWS_WRITE_TEXT);
-                jrpc_message_dispose(message);
-            }
-            break;
-        default:
-            break;
         }
+        break;        
+    case LWS_CALLBACK_RECEIVE:
+        if (NULL != connection)
+        {
+            jrpc_protocol_process(protocol, connection, in, length);
+        }
+        break;
+    case LWS_CALLBACK_SERVER_WRITEABLE:
+        if ((NULL != connection) && (!jrpc_queue_is_empty(&connection->messages)))
+        {
+            struct jrpc_message * message = jrpc_queue_dequeue(&connection->messages);
+            lws_write(wsi, (unsigned char *) message->data, message->length, LWS_WRITE_TEXT);
+            jrpc_message_dispose(message);
+        }
+        break;
+    case LWS_CALLBACK_RAW_RX_FILE:
+        {
+            char temp;
+            read(protocol->fd[0], &temp, 1);
+        }
+        break;
+    default:
+        break;
     }
 
     if ((NULL != connection) && (!jrpc_queue_is_empty(&connection->messages)))
@@ -155,12 +178,15 @@ void jrpc_server_protocol_init(
     protocol->onnotify = &jrpc_default_onnotify;
     protocol->onconnected = &jrpc_default_onconnected;
     protocol->ondisconnected = &jrpc_default_ondisconnected;
+
+    socketpair(AF_UNIX, SOCK_DGRAM, 0, protocol->fd);
 }
 
 void jrpc_protocol_cleanup(
     struct jrpc_protocol * JRPC_UNUSED_PARAM(protocol))
 {
-    // empty
+    close(protocol->fd[0]);
+    close(protocol->fd[1]);
 }
 
 void jrpc_protocol_init_lws(
@@ -171,4 +197,11 @@ void jrpc_protocol_init_lws(
     lws_protocol->callback = &jrpc_protocol_callback;
     lws_protocol->per_session_data_size = sizeof(struct jrpc_connection);
     lws_protocol->user = protocol;
+}
+
+extern void jrpc_protocol_wakeup(
+    struct jrpc_protocol * protocol)
+{
+    char value = 42;
+    write(protocol->fd[1], &value, 1);
 }

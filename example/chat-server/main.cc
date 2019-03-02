@@ -44,7 +44,7 @@ struct chatter
     std::string name;    
 };
 
-static bool is_shutdown_requested;
+static volatile bool is_shutdown_requested;
 static std::unordered_map<jrpc_connection *, chatter> chatters;
 
 bool is_name_used(char const * name)
